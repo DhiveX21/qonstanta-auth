@@ -1,13 +1,13 @@
 import {
-  IGetAllRelatedReferralPayload,
   ISendOTPRegisterPayload,
+  IUserLoginPayload,
   IUserRegisterPayload,
   IVerifyOTPRegisterPayload,
   IVerifyReferralCodePayload,
 } from "@/_types/payload.type";
 import {
-  IGetAllRelatedReferralResponse,
   ISendOTPRegisterResponse,
+  IUserLoginResponse,
   IUserRegisterResponse,
   IVerifyOTPRegisterResponse,
 } from "@/_types/response.type";
@@ -26,7 +26,7 @@ export interface IUserDatasource {
   userRegister: (
     body: IUserRegisterPayload
   ) => Promise<AxiosResponse<IUserRegisterResponse>>;
-  getAllRelatedReferral: (
-    body: IGetAllRelatedReferralPayload
-  ) => Promise<AxiosResponse<IGetAllRelatedReferralResponse>>;
+  userLogin: (
+    body: IUserLoginPayload
+  ) => Promise<AxiosResponse<IUserLoginResponse>>;
 }

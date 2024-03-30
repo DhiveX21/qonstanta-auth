@@ -1,0 +1,16 @@
+{
+  "callbackUrl": [
+    {
+      "name": "tryout",
+      "url": "https://tryout.qonstanta.id"
+    },
+    {
+      "name": "landing",
+      "url": "https://qonstanta.id"
+    },
+    {
+      "name": "product",
+      "url": "https://product.qonstanta.id"
+    }
+  ]
+}

@@ -1,8 +1,8 @@
 import axiosInstance from "@/domain/datasource/axiosConfig";
 import axios from "axios";
 
-const urlStudentService = process.env.URL_STUDENT_SERVICE;
-const urlStudentRoleService = process.env.URL_STUDENT_ROLE_SERVICE;
+const urlStudentService = process.env.NEXT_PUBLIC_URL_STUDENT_SERVICE;
+const urlStudentRoleService = process.env.NEXT_PUBLIC_URL_STUDENT_ROLE_SERVICE;
 
 /////////////////////////////////
 //////////////POST///////////////

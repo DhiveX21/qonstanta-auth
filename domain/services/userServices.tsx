@@ -1,13 +1,13 @@
 import {
-  IGetAllRelatedReferralPayload,
   ISendOTPRegisterPayload,
+  IUserLoginPayload,
   IUserRegisterPayload,
   IVerifyOTPRegisterPayload,
 } from "@/_types/payload.type";
 import {
   IErrorHandler,
-  IGetAllRelatedReferralResponse,
   ISendOTPRegisterResponse,
+  IUserLoginResponse,
   IUserRegisterResponse,
   IVerifyOTPRegisterResponse,
 } from "@/_types/response.type";
@@ -52,21 +52,18 @@ const userServices: IUserServices = {
       return null;
     }
   },
-  getAllRelatedReferralServices: async (
-    body: IGetAllRelatedReferralPayload
-  ): Promise<IGetAllRelatedReferralResponse | null> => {
+  userLoginServices: async (
+    body: IUserLoginPayload
+  ): Promise<IUserLoginResponse | null> => {
     try {
-      const res = await userRepository.getAllRelatedReferralRepository(body);
-
+      const res = await userRepository.userLogin(body);
+      toast.success("Success Login");
       return res;
     } catch (error) {
       toast.error(String(error));
       return null;
     }
   },
-  exportReferralServices: function (referral_id: string): void {
-    userRepository.exportReferralRepository(referral_id);
-  }
 };
 
 export default userServices;

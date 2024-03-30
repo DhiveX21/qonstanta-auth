@@ -1,12 +1,12 @@
 import {
-  IGetAllRelatedReferralPayload,
   ISendOTPRegisterPayload,
+  IUserLoginPayload,
   IUserRegisterPayload,
   IVerifyOTPRegisterPayload,
 } from "@/_types/payload.type";
 import {
-  IGetAllRelatedReferralResponse,
   ISendOTPRegisterResponse,
+  IUserLoginResponse,
   IUserRegisterResponse,
   IVerifyOTPRegisterResponse,
 } from "@/_types/response.type";
@@ -19,8 +19,5 @@ export interface IUserRepository {
     body: IVerifyOTPRegisterPayload
   ) => Promise<IVerifyOTPRegisterResponse>;
   userRegister: (body: IUserRegisterPayload) => Promise<IUserRegisterResponse>;
-  getAllRelatedReferralRepository: (
-    body: IGetAllRelatedReferralPayload
-  ) => Promise<IGetAllRelatedReferralResponse>;
-  exportReferralRepository: (referral_id: string) => void;
+  userLogin: (body: IUserLoginPayload) => Promise<IUserLoginResponse>;
 }

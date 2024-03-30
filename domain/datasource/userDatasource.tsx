@@ -1,6 +1,6 @@
 import {
-  IGetAllRelatedReferralPayload,
   ISendOTPRegisterPayload,
+  IUserLoginPayload,
   IUserRegisterPayload,
   IVerifyOTPRegisterPayload,
   IVerifyReferralCodePayload,
@@ -9,8 +9,8 @@ import { IUserDatasource } from "./types/userDatasource.type";
 import axiosInstance from "./axiosConfig";
 import axiosInstancePublic from "./axiosConfigPublic";
 
-const urlUserService = process.env.URL_USER_SERVICE;
-const urlPublicService = process.env.URL_PUBLIC_SERVICE;
+const urlUserService = process.env.NEXT_PUBLIC_URL_USER_SERVICE;
+const urlPublicService = process.env.NEXT_PUBLIC_URL_PUBLIC_SERVICE;
 
 const userDatasource: IUserDatasource = {
   sendOTPRegister: async (body: ISendOTPRegisterPayload) => {
@@ -36,13 +36,10 @@ const userDatasource: IUserDatasource = {
       ...body,
     });
   },
-  getAllRelatedReferral: async (body: IGetAllRelatedReferralPayload) => {
-    return await axiosInstance.post(
-      `${urlUserService}api/users/datatable/referral`,
-      {
-        ...body,
-      }
-    );
+  userLogin: async (body: IUserLoginPayload) => {
+    return await axiosInstancePublic.post(`${urlPublicService}api/login`, {
+      ...body,
+    });
   },
 };
 

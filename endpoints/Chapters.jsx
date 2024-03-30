@@ -1,6 +1,6 @@
 import axiosInstance from "@/domain/datasource/axiosConfig";
 
-const urlChapterService = process.env.URL_CHAPTER_SERVICE;
+const urlChapterService = process.env.NEXT_PUBLIC_URL_CHAPTER_SERVICE;
 
 /////////////////////////////////
 //////////////POST///////////////

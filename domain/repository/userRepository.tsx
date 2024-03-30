@@ -1,13 +1,13 @@
 import {
-  IGetAllRelatedReferralPayload,
   ISendOTPRegisterPayload,
+  IUserLoginPayload,
   IUserRegisterPayload,
   IVerifyOTPRegisterPayload,
 } from "@/_types/payload.type";
 import {
   IErrorHandler,
-  IGetAllRelatedReferralResponse,
   ISendOTPRegisterResponse,
+  IUserLoginResponse,
   IUserRegisterResponse,
   IVerifyOTPRegisterResponse,
 } from "@/_types/response.type";
@@ -49,20 +49,15 @@ const userRepository: IUserRepository = {
       throw new Error("Gagal Registrasi");
     }
   },
-  getAllRelatedReferralRepository: async (
-    body: IGetAllRelatedReferralPayload
-  ): Promise<IGetAllRelatedReferralResponse> => {
+  userLogin: async (body: IUserLoginPayload): Promise<IUserLoginResponse> => {
     try {
-      const res = await userDatasource.getAllRelatedReferral(body);
+      const res = await userDatasource.userLogin(body);
       return res.data;
     } catch (error) {
       console.error(JSON.stringify(error));
-      throw new Error("Gagal Registrasi");
+      throw new Error("Gagal Login");
     }
   },
-  exportReferralRepository: function (referral_id: string): void {
-    userDatasource.exportReferral(referral_id);
-  }
 };
 
 export default userRepository;

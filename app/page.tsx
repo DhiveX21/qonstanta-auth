@@ -1,20 +1,22 @@
 // import { useSession, signIn, signOut } from "next-auth/react";
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { SubmitHandler, useForm } from "react-hook-form";
 import SubmitButton from "@/components/Button/SubmitButton";
 import IconButton from "@/components/Button/IconButton";
 import { userCheck } from "@/endpoints/Users";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { toast } from "react-toastify";
 import useAuth from "@/hooks/useAuth";
 import useControlZustand from "@/zustand/useControlZustand";
+import { redirect } from "next/navigation";
 import {
   ISendOTPRegisterPayload,
   IVerifyOTPRegisterPayload,
 } from "@/_types/payload.type";
 import Image from "next/image";
 import Confirmation from "@/components/ToastConfirmation";
+import mockGeneral from "../_const/general.json";
 
 interface IFormRegister {
   fullname: string;
@@ -31,12 +33,19 @@ interface IFormRegister {
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const { sendOTPRegister, verifyOTPRegister, userRegister } = useAuth();
+  const {
+    sendOTPRegister,
+    verifyOTPRegister,
+    userRegister,
+    userLogin,
+    setLoginCookies,
+  } = useAuth();
   const { isPostLoading, setIsPostLoading } = useControlZustand();
   const [activeEmail, setActiveEmail] = useState<string | null>(null);
   const [isEmailExist, setIsEmailExist] = useState(false);
   const [isSendOTP, setIsSendOTP] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   // const { data: session }: any = useSession();
 
   const {
@@ -50,9 +59,11 @@ export default function Login() {
   // if (session?.accessToken && new Date(session?.expires) > new Date()) {
   //   router.push("/dashboard");
   // }
-  // if (router.query.ref) {
-  //   setValue("referral", String(router.query.ref));
-  // }
+  useEffect(() => {
+    if (searchParams.get("ref")) {
+      setValue("referral", String(searchParams.get("ref")));
+    }
+  }, [searchParams.get("ref")]);
 
   const handleUserCheck: SubmitHandler<IFormRegister> = async (data) => {
     let body = {
@@ -78,7 +89,6 @@ export default function Login() {
               autoClose: false,
             }
           );
-          // toast.success("Email baru nih :P, Daftar yuk!");
         } else {
           toast.error("Terdapat kesalahan pada permintaan.");
         }
@@ -88,41 +98,53 @@ export default function Login() {
     }
   };
 
-  const handleLoginSubmit: SubmitHandler<IFormRegister> = (data) => {
-    // dispatch(addPostGlobalLoading);
+  const handleLoginSubmit: SubmitHandler<IFormRegister> = async (data) => {
     setIsPostLoading({
       active: true,
     });
-    // signIn("credentials", {
-    //   email: activeEmail,
-    //   password: data.password,
-    //   redirect: false,
-    // })
-    //   .then((response) => {
-    //     if (response?.ok) {
-    //       router.push("/dashboard");
-    //       setIsPostLoading({
-    //         active: false,
-    //       });
-    //     } else if (response?.status === 401) {
-    //       alert("Wrong Password");
-    //       setIsPostLoading({
-    //         active: false,
-    //       });
-    //     } else {
-    //       alert("Something wrong with server");
-    //       setIsPostLoading({
-    //         active: false,
-    //       });
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     console.error(error);
-    //     alert("Login Failed");
-    //     setIsPostLoading({
-    //       active: false,
-    //     });
-    //   });
+
+    try {
+      await userLogin({
+        email: activeEmail!,
+        password: data.password,
+      }).then((res) => {
+        if (res?.data?.access_token) {
+          setLoginCookies({
+            accessToken: res?.data?.access_token,
+            credentials: {
+              email: res?.data?.user?.email,
+              id: res?.data?.user?.id,
+              name: res?.data?.user?.name,
+              phone_number: res?.data?.user?.phone_number,
+              role: res?.data?.user?.role,
+              verification_date: res?.data?.user?.verification_date,
+              referral_code_regis: res?.data?.user?.referral_code_regis,
+            },
+            studentData: {
+              gender: res?.data?.user?.student_detail?.gender,
+              grade: res?.data?.user?.student_detail?.grade,
+              id: res?.data?.user?.student_detail?.id,
+              id_qonstanta: res?.data?.user?.student_detail?.id_qonstanta,
+              major: res?.data?.user?.student_detail?.major,
+              school_name: res?.data?.user?.student_detail?.school_name,
+            },
+          });
+          const redirectUrl =
+            mockGeneral.callbackUrl.find(
+              (item) => item.name === searchParams.get("redirect")
+            )?.url ?? "https://qonstanta.id";
+          router.replace(redirectUrl);
+        } else {
+          toast.error("Terdapat kesalahan pada permintaan.");
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsPostLoading({
+        active: false,
+      });
+    }
   };
 
   const handleRegister = async (data: IFormRegister) => {
@@ -210,7 +232,7 @@ export default function Login() {
           <div className="login__wrapper h-screen w-full px-6 md:px-44 lg:flex lg:px-0 lg:overflow-hidden">
             <div className="login__form h-full w-full lg:w-1/2 lg:px-32">
               <div className="login__form__wrapper flex flex-col justify-center items-center h-full w-full ">
-                {/* {router?.query?.note && (
+                {searchParams.get("note") && (
                   <div className="w-full text-center mb-20 font-black text-xs md:text-sm lg:text-md text-q_textgray bg-q_lemon bg-opacity-70 p-5 rounded-xl shadow-lg flex gap-2 items-center justify-center">
                     <Image
                       className="w-[25px] drop-shadow-[0_0_10px_#ffffff]"
@@ -220,10 +242,10 @@ export default function Login() {
                       height={25}
                     />
                     <p className="drop-shadow-[0_0_2px_#cdcdcd]">
-                      {router?.query?.note}
+                      {searchParams.get("note")}
                     </p>
                   </div>
-                )} */}
+                )}
                 <picture className="w-1/2 mb-10">
                   <img src="/images/qonstanta-logo.png" alt="Menu" />
                 </picture>
@@ -318,7 +340,8 @@ export default function Login() {
                       <div className="login__form__item w-full mb-4">
                         <div className="login__form__item__label font-semibold text-sm animation-popup-2">
                           <label htmlFor="password">
-                            Nomor Handphone<span className="text-q_red">*</span>
+                            Nomor Handphone
+                            <span className="text-q_red">*</span>
                           </label>
                         </div>
                         <div className="login__form__item__input animation-popup-3 relative">
@@ -388,7 +411,8 @@ export default function Login() {
                       <div className="login__form__item w-full mb-4">
                         <div className="login__form__item__label font-semibold text-sm animation-popup-2">
                           <label htmlFor="password">
-                            Ulangi Password<span className="text-q_red">*</span>
+                            Ulangi Password
+                            <span className="text-q_red">*</span>
                           </label>
                         </div>
                         <div className="login__form__item__input animation-popup-3">
@@ -432,7 +456,9 @@ export default function Login() {
                                   maxLength: 25,
                                   minLength: 3,
                                 })}
-                                // readOnly={router.query.ref ? true : false}
+                                readOnly={
+                                  searchParams.get("ref") ? true : false
+                                }
                               />
                             </div>
                           </div>

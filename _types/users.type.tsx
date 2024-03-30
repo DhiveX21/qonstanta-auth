@@ -10,7 +10,7 @@ export interface IUser {
 export interface ICredentials {
   id: number;
   name: string;
-  role: "student";
+  role: string;
   phone_number: string;
   email: string;
   verification_date: string;
@@ -21,9 +21,8 @@ export interface IStudentData {
   id: number;
   gender: string;
   grade: number;
-
   id_qonstanta: string;
-  major: IEnumMajor;
+  major: IEnumMajor | string;
   name: string;
   phone_number: string;
   school_name: string;
@@ -61,3 +60,11 @@ export interface IRoles {
   _id: string;
   special_limitations: any;
 }
+
+export type IAuthCookies = {
+  accessToken: string;
+  credentials: Omit<ICredentials, "studentData"> & {
+    referral_code_regis: string;
+  };
+  studentData: Omit<IStudentData, "user_id" | "phone_number" | "name">;
+};

@@ -2,7 +2,7 @@ import axios from "axios";
 import { setGlobalPostLoading } from "../store/actions/controlActions";
 import axiosInstance from "@/domain/datasource/axiosConfig";
 
-const urlScheduleService = process.env.URL_SCHEDULE_SERVICE;
+const urlScheduleService = process.env.NEXT_PUBLIC_URL_SCHEDULE_SERVICE;
 
 /////////////////////////////////
 //////////////POST///////////////

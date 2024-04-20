@@ -17,6 +17,7 @@ import {
 import Image from "next/image";
 import Confirmation from "@/components/ToastConfirmation";
 import mockGeneral from "../_const/general.json";
+import { IAuthCookies, IRoles } from "@/_types/users.type";
 
 interface IFormRegister {
   fullname: string;
@@ -38,7 +39,10 @@ export default function Login() {
     verifyOTPRegister,
     userRegister,
     userLogin,
+    getUserRole,
     setLoginCookies,
+    removeLoginCookies,
+    getOneStudentByUserId,
   } = useAuth();
   const { isPostLoading, setIsPostLoading } = useControlZustand();
   const [activeEmail, setActiveEmail] = useState<string | null>(null);
@@ -59,11 +63,19 @@ export default function Login() {
   // if (session?.accessToken && new Date(session?.expires) > new Date()) {
   //   router.push("/dashboard");
   // }
+  console.log(searchParams.toString());
   useEffect(() => {
     if (searchParams.get("ref")) {
       setValue("referral", String(searchParams.get("ref")));
     }
-  }, [searchParams.get("ref")]);
+    if (searchParams.get("action") === "logout") {
+      removeLoginCookies();
+      let tempQuery = searchParams.toString();
+      let finalQuery = tempQuery.split("action=logout").join("");
+      console.log(finalQuery);
+      router.replace(`/${finalQuery ? "?" + finalQuery : ""}`);
+    }
+  }, [searchParams.get("ref"), searchParams.get("action")]);
 
   const handleUserCheck: SubmitHandler<IFormRegister> = async (data) => {
     let body = {
@@ -103,13 +115,20 @@ export default function Login() {
       active: true,
     });
 
+    let errorCounter = 0;
+    let userId;
+    let loginData: Omit<IAuthCookies, "roles" | "studentData">;
+    let token;
+    let roles: IRoles[];
     try {
       await userLogin({
         email: activeEmail!,
         password: data.password,
       }).then((res) => {
         if (res?.data?.access_token) {
-          setLoginCookies({
+          userId = res?.data?.user?.id;
+          token = res?.data?.access_token;
+          loginData = {
             accessToken: res?.data?.access_token,
             credentials: {
               email: res?.data?.user?.email,
@@ -119,25 +138,43 @@ export default function Login() {
               role: res?.data?.user?.role,
               verification_date: res?.data?.user?.verification_date,
               referral_code_regis: res?.data?.user?.referral_code_regis,
+              referral: res?.data?.user?.referral ?? null,
             },
-            studentData: {
-              gender: res?.data?.user?.student_detail?.gender,
-              grade: res?.data?.user?.student_detail?.grade,
-              id: res?.data?.user?.student_detail?.id,
-              id_qonstanta: res?.data?.user?.student_detail?.id_qonstanta,
-              major: res?.data?.user?.student_detail?.major,
-              school_name: res?.data?.user?.student_detail?.school_name,
-            },
-          });
-          const redirectUrl =
-            mockGeneral.callbackUrl.find(
-              (item) => item.name === searchParams.get("redirect")
-            )?.url ?? "https://qonstanta.id";
-          router.replace(redirectUrl);
+          };
         } else {
-          toast.error("Terdapat kesalahan pada permintaan.");
+          errorCounter + 1;
         }
       });
+
+      if (errorCounter === 0 && userId) {
+        await getUserRole(userId).then((res) => {
+          if (res?.data?.roles) {
+            roles = res?.data?.roles;
+          } else {
+            errorCounter + 1;
+          }
+        });
+      }
+
+      if (errorCounter === 0 && token && userId) {
+        await getOneStudentByUserId(userId, {
+          headers: { Authorization: `Bearer ${token}` },
+        }).then((res) => {
+          if (res?.data) {
+            setLoginCookies({
+              ...loginData,
+              roles: roles,
+              studentData: res?.data,
+            });
+            const redirectUrl =
+              searchParams.get("redirect") ?? "https://qonstanta.id";
+            router.replace(redirectUrl);
+          } else {
+            errorCounter + 1;
+            toast.error("Terdapat kesalahan pada permintaan.");
+          }
+        });
+      }
     } catch (error) {
       console.error(error);
     } finally {

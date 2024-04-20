@@ -71,7 +71,11 @@ export interface IUserLoginData {
       school_name: string;
     };
     referral_code_regis: string;
-    referral: string;
+    referral: {
+      id: number;
+      user_id: number;
+      referral_code: string;
+    };
   };
 }
 
@@ -81,6 +85,45 @@ export interface IRoleGetByUserIdData {
   id: string;
   user_id: number;
   roles: IRoles[];
+}
+
+export interface IGetOneStudentByUserIdData {
+  id: number;
+  email: string;
+  name: string;
+  gender: IEnumGender;
+  user_id: number;
+  student_class: number;
+  id_qonstanta: string;
+  phone_number: string;
+  grade: number;
+  sub_class: string;
+  major: IEnumMajor;
+  address: string;
+  birth_date: string;
+  is_active: boolean;
+  is_active_tryout: boolean;
+  is_paid: boolean;
+  dummy: boolean;
+  type_to: IEnumMajor;
+  trial_to: boolean;
+  school_name: string;
+  school: {
+    id: number;
+    name: string;
+    nspn: string;
+    city_name: string;
+    city_id: string;
+    city: {
+      id: string;
+      province_id: string;
+      name: string;
+      province: {
+        id: string;
+        name: string;
+      };
+    };
+  };
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -112,4 +155,8 @@ export interface IUserLoginResponse {
 export interface IRoleGetByUserIdResponse {
   meta: IResponseMeta;
   data: IRoleGetByUserIdData;
+}
+export interface IGetOneStudentByUserIdResponse {
+  meta: IResponseMeta;
+  data: IGetOneStudentByUserIdData;
 }

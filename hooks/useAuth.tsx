@@ -5,6 +5,8 @@ import {
   IVerifyOTPRegisterPayload,
 } from "@/_types/payload.type";
 import {
+  IGetOneStudentByUserIdResponse,
+  IRoleGetByUserIdResponse,
   ISendOTPRegisterResponse,
   IUserLoginResponse,
   IUserRegisterResponse,
@@ -16,10 +18,20 @@ import useControlZustand from "@/zustand/useControlZustand";
 import React from "react";
 import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
+import useEncrypt from "./useEncrypt";
+import studentServices from "@/domain/services/studentServices";
 
 const useAuth = () => {
   // const { isPostLoading, setIsPostLoading } = useControlZustand();
-  const [cookies, setCookie] = useCookies(["auth"]);
+
+  const [cookies, setCookie, removeCookie] = useCookies([
+    "accessToken",
+    "credentials",
+    "studentData",
+    "roles",
+  ]);
+  const { encrypt, decrypt } = useEncrypt();
+
   const [isPostLoading, setIsPostLoading] = useControlZustand((state) => [
     state.isPostLoading,
     state.setIsPostLoading,
@@ -109,8 +121,63 @@ const useAuth = () => {
     }
   };
 
+  const getUserRole = async (
+    userId: number
+  ): Promise<IRoleGetByUserIdResponse | null> => {
+    setIsPostLoading({
+      active: true,
+    });
+    try {
+      const res = await studentServices.getRoleByUserIdServices(userId);
+      setIsPostLoading({
+        active: false,
+      });
+      return res;
+    } catch (error) {
+      toast.error(String(error));
+      setIsPostLoading({
+        active: false,
+      });
+      return null;
+    }
+  };
+  const getOneStudentByUserId = async (
+    userId: number,
+    config: any
+  ): Promise<IGetOneStudentByUserIdResponse | null> => {
+    setIsPostLoading({
+      active: true,
+    });
+    try {
+      const res = await studentServices.getOneStudentByUserIdServices(
+        userId,
+        config
+      );
+      setIsPostLoading({
+        active: false,
+      });
+      return res;
+    } catch (error) {
+      toast.error(String(error));
+      setIsPostLoading({
+        active: false,
+      });
+      return null;
+    }
+  };
+
   const setLoginCookies = (cookiesData: IAuthCookies) => {
-    setCookie("auth", cookiesData);
+    setCookie("accessToken", encrypt(JSON.stringify(cookiesData.accessToken)));
+    setCookie("credentials", encrypt(JSON.stringify(cookiesData.credentials)));
+    setCookie("studentData", encrypt(JSON.stringify(cookiesData.studentData)));
+    setCookie("roles", encrypt(JSON.stringify(cookiesData.roles)));
+  };
+
+  const removeLoginCookies = () => {
+    removeCookie("accessToken");
+    removeCookie("credentials");
+    removeCookie("studentData");
+    removeCookie("roles");
   };
 
   return {
@@ -118,7 +185,10 @@ const useAuth = () => {
     verifyOTPRegister,
     userRegister,
     userLogin,
+    getUserRole,
     setLoginCookies,
+    removeLoginCookies,
+    getOneStudentByUserId,
   };
 };
 

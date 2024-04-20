@@ -14,6 +14,7 @@ import {
 import React from "react";
 import userDatasource from "../datasource/userDatasource";
 import { IUserRepository } from "./types/userRepository.type";
+import { AxiosError } from "axios";
 
 const userRepository: IUserRepository = {
   sendOTPRegisterRepository: async (
@@ -53,9 +54,13 @@ const userRepository: IUserRepository = {
     try {
       const res = await userDatasource.userLogin(body);
       return res.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error(JSON.stringify(error));
-      throw new Error("Gagal Login");
+      if (error.response.status === 401) {
+        throw new Error("Password yang kamu masukan Salah!");
+      } else {
+        throw new Error("Gagal Login");
+      }
     }
   },
 };

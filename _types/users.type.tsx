@@ -1,4 +1,5 @@
 import { IEnumLevel, IEnumMajor, IEnumRoles } from "./enum.type";
+import { IGetOneStudentByUserIdData } from "./response.type";
 
 export interface IUser {
   expires: string;
@@ -15,6 +16,11 @@ export interface ICredentials {
   email: string;
   verification_date: string;
   studentData: IStudentData;
+  referral: {
+    id: number;
+    user_id: number;
+    referral_code: string;
+  };
 }
 
 export interface IStudentData {
@@ -66,5 +72,6 @@ export type IAuthCookies = {
   credentials: Omit<ICredentials, "studentData"> & {
     referral_code_regis: string;
   };
-  studentData: Omit<IStudentData, "user_id" | "phone_number" | "name">;
+  studentData: IGetOneStudentByUserIdData;
+  roles: IRoles[];
 };
